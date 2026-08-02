@@ -1,6 +1,16 @@
-output "load_balancer_address" {
-  description = "Public HTTPS address of the application."
-  value       = "https://${yandex_alb_load_balancer.web.listener[0].endpoint[0].address[0].external_ipv4_address[0].address}"
+output "app_url" {
+  description = "Public address of the application."
+  value       = "https://${var.domain_name}"
+}
+
+output "load_balancer_ip" {
+  description = "Static public address of the load balancer."
+  value       = yandex_vpc_address.alb.external_ipv4_address[0].address
+}
+
+output "dns_name_servers" {
+  description = "Name servers to set at the domain registrar."
+  value       = ["ns1.yandexcloud.kz", "ns2.yandexcloud.kz"]
 }
 
 output "web_public_ips" {

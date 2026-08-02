@@ -1,3 +1,11 @@
+resource "yandex_vpc_address" "alb" {
+  name = "${var.project_name}-alb-ip"
+
+  external_ipv4_address {
+    zone_id = var.yc_zone
+  }
+}
+
 resource "yandex_alb_target_group" "web" {
   name = "${var.project_name}-tg"
 
@@ -65,18 +73,39 @@ resource "yandex_alb_load_balancer" "web" {
   }
 
   listener {
+    name = "http"
+
+    endpoint {
+      address {
+        external_ipv4_address {
+          address = yandex_vpc_address.alb.external_ipv4_address[0].address
+        }
+      }
+      ports = [80]
+    }
+
+    http {
+      redirects {
+        http_to_https = true
+      }
+    }
+  }
+
+  listener {
     name = "https"
 
     endpoint {
       address {
-        external_ipv4_address {}
+        external_ipv4_address {
+          address = yandex_vpc_address.alb.external_ipv4_address[0].address
+        }
       }
       ports = [443]
     }
 
     tls {
       default_handler {
-        certificate_ids = [yandex_cm_certificate.web.id]
+        certificate_ids = [data.yandex_cm_certificate.app.id]
 
         http_handler {
           http_router_id = yandex_alb_http_router.web.id
