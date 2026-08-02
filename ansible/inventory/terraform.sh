@@ -39,7 +39,10 @@ hostvars = {
 print(json.dumps({
     "webservers": {
         "hosts": sorted(hostvars),
-        "vars": {"db_host": value("postgresql_host", "")},
+        "vars": {
+            "db_host": value("postgresql_host", ""),
+            "app_url": value("app_url", ""),
+        },
     },
     "_meta": {"hostvars": hostvars},
 }, indent=2))

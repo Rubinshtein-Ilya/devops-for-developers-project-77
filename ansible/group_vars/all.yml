@@ -3,17 +3,16 @@ ansible_user: ubuntu
 ansible_ssh_private_key_file: "~/.ssh/id_ed25519"
 
 app_name: blog
-app_image: "irubinshtein/devops-for-developers-project-74:latest"
-app_dir: /opt/blog
 app_port: 80
-app_container_port: 8080
+app_service_tag: "{{ app_name }}"
 
 db_port: 6432
 db_name: app
 db_user: app
 db_password: "{{ lookup('env', 'TF_VAR_pg_password') }}"
 
-app_service_tag: blog
+uptime_ping_url: "{{ lookup('env', 'UPMON_PING_URL') }}"
+uptime_interval_minutes: 5
 
 datadog_api_key: "{{ lookup('env', 'TF_VAR_datadog_api_key') }}"
 datadog_site: datadoghq.com
