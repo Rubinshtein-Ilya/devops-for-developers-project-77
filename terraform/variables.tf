@@ -124,6 +124,32 @@ variable "pg_user" {
   default     = "app"
 }
 
+variable "app_service_tag" {
+  description = "Value of the service tag the Datadog agent reports with. Must match ansible/group_vars/all.yml."
+  type        = string
+  default     = "blog"
+}
+
+variable "datadog_api_key" {
+  description = "Datadog API key. Passed via TF_VAR_datadog_api_key."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "datadog_app_key" {
+  description = "Datadog application key. Passed via TF_VAR_datadog_app_key."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "datadog_site" {
+  description = "Datadog site the account belongs to."
+  type        = string
+  default     = "datadoghq.com"
+}
+
 variable "pg_password" {
   description = "Application database password. Passed via TF_VAR_pg_password."
   type        = string

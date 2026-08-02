@@ -12,3 +12,27 @@ db_port: 6432
 db_name: app
 db_user: app
 db_password: "{{ lookup('env', 'TF_VAR_pg_password') }}"
+
+app_service_tag: blog
+
+datadog_api_key: "{{ lookup('env', 'TF_VAR_datadog_api_key') }}"
+datadog_site: datadoghq.com
+datadog_agent_major_version: 7
+
+datadog_config:
+  tags:
+    - "project:project-77"
+    - "service:{{ app_service_tag }}"
+    - "env:production"
+
+datadog_checks:
+  http_check:
+    init_config:
+    instances:
+      - name: "{{ app_name }} on {{ inventory_hostname }}"
+        url: "http://127.0.0.1:{{ app_port }}/"
+        timeout: 5
+        collect_response_time: true
+        tags:
+          - "service:{{ app_service_tag }}"
+          - "project:project-77"

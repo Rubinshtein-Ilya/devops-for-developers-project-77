@@ -1,8 +1,9 @@
 TF := terraform -chdir=terraform
 ANSIBLE_DIR := ansible
+VAULT_ARGS := $(shell test -f ansible/.vault_pass && echo --vault-password-file ansible/.vault_pass)
 
 .PHONY: help setup secrets vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
-        galaxy inventory ping syntax provision deploy release
+        galaxy inventory ping syntax provision deploy monitoring release
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -18,10 +19,10 @@ vault-init: ## Build ansible/vault.yml from a service account key
 	./scripts/make-vault.sh
 
 vault-edit: ## Edit the encrypted vault
-	ansible-vault edit $(ANSIBLE_DIR)/vault.yml
+	ansible-vault edit $(ANSIBLE_DIR)/vault.yml $(VAULT_ARGS)
 
 vault-view: ## Show the decrypted vault contents
-	ansible-vault view $(ANSIBLE_DIR)/vault.yml
+	ansible-vault view $(ANSIBLE_DIR)/vault.yml $(VAULT_ARGS)
 
 # --- Инфраструктура ---
 
@@ -71,4 +72,7 @@ provision: ## Install Docker on the web servers
 deploy: ## Deploy the application containers
 	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags deploy
 
-release: apply provision deploy ## Create the infrastructure and deploy the application
+monitoring: ## Install the Datadog agent on the web servers
+	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
+
+release: apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring
