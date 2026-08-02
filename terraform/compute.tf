@@ -39,7 +39,6 @@ resource "yandex_compute_instance" "web" {
   metadata = {
     user-data = templatefile("${path.module}/cloud-init.yaml", {
       ssh_public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
-      hostname       = "${var.project_name}-web-${count.index + 1}"
     })
   }
 }

@@ -1,0 +1,53 @@
+---
+- name: Ensure the database connection details are known
+  ansible.builtin.assert:
+    that:
+      - db_host | length > 0
+      - db_password | length > 0
+    fail_msg: >-
+      Database host or password is empty. Both come from the environment, so
+      run "eval \"$(./scripts/secrets.sh)\"" and "make apply" first.
+    quiet: true
+
+- name: Ensure the application directory exists
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Write the environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  register: app_env
+
+- name: Pull the application image
+  community.docker.docker_image:
+    name: "{{ app_image }}"
+    source: pull
+    force_source: true
+
+- name: Run the application container
+  community.docker.docker_container:
+    name: "{{ app_name }}"
+    image: "{{ app_image }}"
+    env_file: "{{ app_dir }}/.env"
+    published_ports:
+      - "{{ app_port }}:{{ app_container_port }}"
+    restart_policy: unless-stopped
+    recreate: "{{ app_env.changed }}"
+    state: started
+
+- name: Wait until the application answers over HTTP
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/"
+    status_code: 200
+  register: app_http
+  until: app_http.status == 200
+  retries: "{{ (app_start_timeout / 5) | int }}"
+  delay: 5

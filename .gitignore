@@ -13,6 +13,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+ansible/.galaxy_roles/
+*.retry
+
 .vault_pass
 *.pem
 *.key
