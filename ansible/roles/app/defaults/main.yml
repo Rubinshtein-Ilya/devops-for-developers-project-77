@@ -1,0 +1,7 @@
+---
+app_name: blog
+app_image: "irubinshtein/devops-for-developers-project-74:latest"
+app_dir: /opt/blog
+app_port: 80
+app_container_port: 8080
+app_start_timeout: 300
