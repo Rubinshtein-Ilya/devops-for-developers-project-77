@@ -119,26 +119,35 @@ make destroy   # удалить всё
 | --- | --- |
 | `playbook.yml` | Основной плейбук: подготовка серверов и деплой |
 | `requirements.yml` | Внешние роли и коллекции |
-| `inventory/terraform.sh` | Инвентарь, читающий адреса из Terraform |
-| `group_vars/all.yml` | Несекретные переменные |
+| `inventory.ini` | Инвентарь — **генерируется Terraform** |
+| `group_vars/all/terraform.yml` | Переменные из Terraform — **генерируются** |
+| `group_vars/all/main.yml` | Остальные несекретные переменные |
 | `roles/app/` | Своя роль: запуск контейнера с приложением |
 | `roles/uptime/` | Своя роль: отчёты о доступности во внешний сервис |
 | `vault.yml` | Зашифрованные секреты |
 
-Инвентарь не статический: скрипт вызывает `terraform output` и отдаёт Ansible
-актуальные адреса машин и FQDN базы. Поэтому после каждого `apply` ничего
-править руками не нужно — при пересоздании инфраструктуры новые адреса
-подхватятся сами.
+Два файла Ansible не пишутся руками — их создаёт Terraform на `apply`
+(см. [terraform/ansible.tf](terraform/ansible.tf)):
+
+```
+ansible/inventory.ini                 адреса веб-серверов
+ansible/group_vars/all/terraform.yml  FQDN базы и публичный адрес
+```
+
+Так адреса живут в одном месте — в состоянии Terraform. При пересоздании
+инфраструктуры новые значения попадают в Ansible сами, править ничего не
+нужно. Посмотреть, что сгенерировалось: `make inventory`.
 
 Порядок деплоя:
 
 ```bash
-eval "$(./scripts/secrets.sh)"   # адреса читаются из стейта, нужны ключи
+eval "$(./scripts/secrets.sh)"   # секреты в переменные окружения
 make galaxy                      # поставить внешние роли (один раз)
-make inventory                   # посмотреть, что видит Ansible
+make inventory                   # посмотреть, что сгенерировал Terraform
 make ping                        # проверить связь с серверами
 make provision                   # поставить Docker
 make deploy                      # выкатить приложение
+make monitoring                  # агент Datadog и отчёты о доступности
 ```
 
 Всё вместе, от пустого облака до работающего приложения:
