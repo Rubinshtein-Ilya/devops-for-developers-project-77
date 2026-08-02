@@ -15,6 +15,13 @@ resource "yandex_vpc_security_group" "alb" {
 
   ingress {
     protocol       = "TCP"
+    description    = "HTTP from anywhere, redirected to HTTPS"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+    port           = 80
+  }
+
+  ingress {
+    protocol       = "TCP"
     description    = "HTTPS from anywhere"
     v4_cidr_blocks = ["0.0.0.0/0"]
     port           = 443

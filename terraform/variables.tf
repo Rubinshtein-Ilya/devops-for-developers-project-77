@@ -28,6 +28,12 @@ variable "project_name" {
   default     = "project-77"
 }
 
+variable "domain_name" {
+  description = "Domain the application is published under. Its DNS zone is managed here."
+  type        = string
+  default     = "rubinshtein.online"
+}
+
 variable "subnet_cidr" {
   description = "CIDR block of the application subnet."
   type        = string
@@ -77,9 +83,9 @@ variable "web_disk_size" {
 }
 
 variable "web_preemptible" {
-  description = "Run web servers as preemptible instances. Much cheaper, stopped after 24h."
+  description = "Run web servers as preemptible instances. Cheaper, but the cloud stops them within 24h."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "ssh_public_key_path" {
