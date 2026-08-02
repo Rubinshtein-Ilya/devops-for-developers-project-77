@@ -1,0 +1,26 @@
+---
+- name: Ensure the uptime check is configured
+  ansible.builtin.assert:
+    that:
+      - uptime_ping_url | length > 0
+      - app_url | length > 0
+    fail_msg: >-
+      UPMON_PING_URL is missing from the environment, or the infrastructure has
+      not been created yet. Add the ping URL to the vault, then reload with
+      ./scripts/secrets.sh.
+    quiet: true
+
+- name: Install the uptime ping script
+  ansible.builtin.template:
+    src: upmon-ping.sh.j2
+    dest: /usr/local/bin/upmon-ping.sh
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Report liveness to Upmon on a schedule
+  ansible.builtin.cron:
+    name: upmon-ping
+    minute: "*/{{ uptime_interval_minutes }}"
+    job: /usr/local/bin/upmon-ping.sh
+    user: root

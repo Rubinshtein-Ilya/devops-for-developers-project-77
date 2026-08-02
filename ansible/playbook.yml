@@ -62,3 +62,4 @@
 
   roles:
     - datadog.dd.agent
+    - uptime
