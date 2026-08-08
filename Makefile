@@ -4,7 +4,7 @@ VAULT_ARGS := --vault-password-file $(ANSIBLE_DIR)/.vault_pass
 
 BACKEND_CREDS = s=$$(./scripts/secrets.sh) && eval "$$s"
 
-.PHONY: help setup vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
+.PHONY: help setup vault-init vault-edit vault-view init fmt fmt-check validate lint plan apply destroy output ssh \
         galaxy inventory ping syntax provision deploy monitoring release
 
 help:
@@ -31,10 +31,13 @@ init: ## Initialize Terraform and connect the remote backend
 fmt: ## Format Terraform files
 	$(TF) fmt -recursive
 
+fmt-check: ## Report badly formatted Terraform files without touching them
+	$(TF) fmt -check -recursive -diff
+
 validate: ## Validate the Terraform configuration
 	$(TF) validate
 
-lint: fmt validate syntax ## Check both Terraform and Ansible
+lint: fmt-check validate syntax ## Check both Terraform and Ansible, changing nothing
 
 plan: ## Show what would change
 	@$(BACKEND_CREDS) && $(TF) plan
@@ -74,4 +77,4 @@ deploy: ## Deploy the application containers
 monitoring: ## Install the Datadog agent and the uptime reporting
 	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
 
-release: apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring
+release: galaxy apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring
