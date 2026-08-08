@@ -2,11 +2,16 @@
 - name: Ensure the database connection details are known
   ansible.builtin.assert:
     that:
-      - db_host | length > 0
+      - db_host is defined and db_host | length > 0
+      - db_name is defined and db_name | length > 0
+      - db_user is defined and db_user | length > 0
+      - db_port is defined
       - db_password | length > 0
     fail_msg: >-
-      Database host or password is empty. Both come from the environment, so
-      run "eval \"$(./scripts/secrets.sh)\"" and "make apply" first.
+      The database settings are incomplete. Everything but the password is
+      generated into group_vars/all/terraform.yml by "make apply", and the
+      password comes from the environment, so run
+      "eval \"$(./scripts/secrets.sh)\"" and "make apply" first.
     quiet: true
 
 - name: Ensure the application directory exists
