@@ -76,6 +76,12 @@ variable "ssh_public_key_path" {
   default     = "~/.ssh/id_ed25519.pub"
 }
 
+variable "ssh_allowed_cidrs" {
+  description = "Address ranges allowed to reach SSH on the web servers. The default keeps port 22 open to the internet, which key-only authentication makes survivable but not private."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
 variable "pg_version" {
   description = "PostgreSQL major version."
   type        = string
