@@ -1,21 +1,3 @@
-variable "yc_service_account_key" {
-  description = "Contents of a service account authorized key in JSON format. Passed via TF_VAR_yc_service_account_key."
-  type        = string
-  sensitive   = true
-}
-
-variable "yc_cloud_id" {
-  description = "Yandex Cloud identifier. Passed via TF_VAR_yc_cloud_id."
-  type        = string
-  sensitive   = true
-}
-
-variable "yc_folder_id" {
-  description = "Yandex Cloud folder identifier. Passed via TF_VAR_yc_folder_id."
-  type        = string
-  sensitive   = true
-}
-
 variable "yc_zone" {
   description = "Default availability zone. Kazakhstan installation provides kz1-a only."
   type        = string
@@ -88,10 +70,32 @@ variable "web_preemptible" {
   default     = false
 }
 
+variable "ssh_user" {
+  description = "Login created on the web servers by cloud-init. Reaches Ansible through the generated inventory and \"make ssh\" through an output, so the three of them cannot drift apart."
+  type        = string
+  default     = "ubuntu"
+}
+
 variable "ssh_public_key_path" {
   description = "Path to the SSH public key placed on web servers."
   type        = string
   default     = "~/.ssh/id_ed25519.pub"
+}
+
+variable "ssh_allowed_cidrs" {
+  description = "Address ranges allowed to reach SSH on the web servers. The default keeps port 22 open to the internet, which key-only authentication makes survivable but not private."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.ssh_allowed_cidrs) > 0
+    error_message = "At least one range is required — an empty list would lock everyone out of the servers, Ansible included."
+  }
+
+  validation {
+    condition     = alltrue([for cidr in var.ssh_allowed_cidrs : can(cidrhost(cidr, 0))])
+    error_message = "Every entry must be a CIDR block, for example 203.0.113.10/32."
+  }
 }
 
 variable "pg_version" {
@@ -113,45 +117,25 @@ variable "pg_disk_size" {
 }
 
 variable "pg_database" {
-  description = "Application database name."
+  description = "Application database name. Reaches Ansible through group_vars/all/terraform.yml. Changing it on a live installation recreates the database."
   type        = string
   default     = "app"
 }
 
 variable "pg_user" {
-  description = "Application database user."
+  description = "Application database user. Reaches Ansible through group_vars/all/terraform.yml. Changing it on a live installation recreates the user."
   type        = string
   default     = "app"
 }
 
 variable "app_service_tag" {
-  description = "Value of the service tag the Datadog agent reports with. Must match ansible/group_vars/all.yml."
+  description = "Value of the service tag the Datadog agent reports with. Reaches Ansible through group_vars/all/terraform.yml, so the monitor and the agent always tag alike."
   type        = string
   default     = "blog"
-}
-
-variable "datadog_api_key" {
-  description = "Datadog API key. Passed via TF_VAR_datadog_api_key."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "datadog_app_key" {
-  description = "Datadog application key. Passed via TF_VAR_datadog_app_key."
-  type        = string
-  sensitive   = true
-  default     = ""
 }
 
 variable "datadog_site" {
   description = "Datadog site the account belongs to."
   type        = string
   default     = "datadoghq.com"
-}
-
-variable "pg_password" {
-  description = "Application database password. Passed via TF_VAR_pg_password."
-  type        = string
-  sensitive   = true
 }

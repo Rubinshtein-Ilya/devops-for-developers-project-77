@@ -50,6 +50,31 @@ provider "registry.terraform.io/hashicorp/local" {
   ]
 }
 
+provider "registry.terraform.io/meilleursagents/ansiblevault" {
+  version     = "3.0.1"
+  constraints = "~> 3.0"
+  hashes = [
+    "h1:JSav8M20fiYU1MgmGURID846hcE4ILX5Q7lUTZ7AsKQ=",
+    "h1:T10ckKAlA6B5ZJLP8j2o2LPFBdUJPsOD93zyCwuM5Rg=",
+    "h1:fHKnHVTD1MwMxoCy6CRdMn10g7W+cFV+lBCg81yubAI=",
+    "h1:vM7BeScXhDDfi75Mt8yi8gfI4g/xN7hrlfYnyjWF5Lo=",
+    "zh:04dcfefe5f24fca3bd7a64e0ad02222a0dddc26f7501b0d5c35591c8c9d17caa",
+    "zh:1ecf9b7e307f1ff1ee678c0e8d28e5d34b9ca856f45c20f475627f6cb45d0ea4",
+    "zh:205ba9ac9c0820d4e3e55e547e8f73bd231418dc0a38e9072b570bb0bb8ed80d",
+    "zh:2b99c2c0fb59c4d8426f95512a06418f1f32318cc62bdcdadf5d2bbc446ae620",
+    "zh:4465614e50f1539b053f09253cf7a8f98099da10c43021abfdce147055b50de1",
+    "zh:6e8d690b15ed05a27e0fc99e59d4146053f173cef7bfb15736622be8b6a23cb3",
+    "zh:7297a071e73d59c57139ce73fdd37fba9bc3a5541ee599dfd4efb1a48aa02ca3",
+    "zh:79e56ecd0c1791da2469c8a7b985ed99ef30b4135dadbf9c318de87452d7cc66",
+    "zh:8476aed050acfdbd9b6194d5accd40b94a84610af1298486fdd8b42fe143e497",
+    "zh:9d70b14dd658ddcbaa34ed16a678d563141f5df0126beda26793587d887b71ce",
+    "zh:b8f2f97c31a7161279b03c157b2c3fb739205ad2d74e2c72496c36ec1fa00199",
+    "zh:cb6cac81f7c5a709f84f862976a3fa357c7d995eca4b12b9f380227c96549280",
+    "zh:cda66924bbc194b27b45232b7a05636dfeb0ed8e66f804d6d6e9e7667145db1f",
+    "zh:d31f353411034474239377ec1ef6b49f7bac68876c52fa70155d36c6576d753c",
+  ]
+}
+
 provider "registry.terraform.io/yandex-cloud/yandex" {
   version     = "0.220.0"
   constraints = "~> 0.220"

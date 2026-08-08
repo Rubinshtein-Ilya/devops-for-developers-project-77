@@ -1,0 +1,71 @@
+name: infra-check
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.6.3
+          terraform_wrapper: false
+
+      - name: Check the formatting
+        run: terraform -chdir=terraform fmt -check -recursive -diff
+
+      - name: Initialize without the remote backend
+        run: terraform -chdir=terraform init -backend=false
+
+      - name: Validate the configuration
+        run: terraform -chdir=terraform validate
+
+  ansible:
+    name: Ansible
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Parse every YAML file that is not encrypted
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          import yaml
+
+          problems = []
+          for path in sorted(pathlib.Path("ansible").rglob("*.yml")):
+              text = path.read_text()
+              if text.startswith("$ANSIBLE_VAULT"):
+                  continue
+              try:
+                  yaml.safe_load(text)
+              except yaml.YAMLError as error:
+                  problems.append(f"{path}: {error}")
+
+          for problem in problems:
+              print(problem, file=sys.stderr)
+
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: Install the external roles and collections
+        run: |
+          pip install ansible-core
+          cd ansible && ansible-galaxy install -r requirements.yml --roles-path .galaxy_roles

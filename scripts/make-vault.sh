@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 KEY_FILE="${1:-$HOME/Downloads/authorized_key.json}"
 VAULT_FILE="$ROOT/ansible/vault.yml"
+VAULT_PASS_FILE="$ROOT/ansible/.vault_pass"
 
 if [ ! -f "$KEY_FILE" ]; then
   echo "Authorized key file not found: $KEY_FILE" >&2
@@ -20,27 +21,74 @@ read -r -p "folder_id: " FOLDER_ID
 read -r -p "static access key id: " ACCESS_KEY_ID
 read -r -s -p "static secret access key: " SECRET_ACCESS_KEY
 echo
-
-SA_KEY="$(python3 -c 'import json,sys; print(json.dumps(json.load(open(sys.argv[1]))))' "$KEY_FILE")"
-
-case "$SA_KEY" in
-  *"'"*)
-    echo "Key contains a single quote, cannot embed safely." >&2
-    exit 1
-    ;;
-esac
+read -r -p "Datadog API key (Enter to skip): " DATADOG_API_KEY
+read -r -p "Datadog application key (Enter to skip): " DATADOG_APP_KEY
+read -r -p "Upmon ping URL (Enter to skip): " UPMON_PING_URL
 
 umask 077
+
+if [ ! -f "$VAULT_PASS_FILE" ]; then
+  read -r -s -p "new vault password: " VAULT_PASS
+  echo
+  read -r -s -p "repeat vault password: " VAULT_PASS_AGAIN
+  echo
+
+  if [ -z "$VAULT_PASS" ]; then
+    echo "The vault password cannot be empty." >&2
+    exit 1
+  fi
+
+  if [ "$VAULT_PASS" != "$VAULT_PASS_AGAIN" ]; then
+    echo "The passwords do not match." >&2
+    exit 1
+  fi
+
+  printf '%s\n' "$VAULT_PASS" > "$VAULT_PASS_FILE"
+  echo "Created $VAULT_PASS_FILE"
+fi
+
+PG_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=')"
+
 TMP_FILE="$(mktemp)"
 trap 'rm -f "$TMP_FILE"' EXIT
 
-cat > "$TMP_FILE" <<EOF
-TF_VAR_yc_service_account_key: '$SA_KEY'
-TF_VAR_yc_cloud_id: "$CLOUD_ID"
-TF_VAR_yc_folder_id: "$FOLDER_ID"
-AWS_ACCESS_KEY_ID: "$ACCESS_KEY_ID"
-AWS_SECRET_ACCESS_KEY: "$SECRET_ACCESS_KEY"
-EOF
+KEY_FILE="$KEY_FILE" \
+CLOUD_ID="$CLOUD_ID" \
+FOLDER_ID="$FOLDER_ID" \
+PG_PASSWORD="$PG_PASSWORD" \
+DATADOG_API_KEY="$DATADOG_API_KEY" \
+DATADOG_APP_KEY="$DATADOG_APP_KEY" \
+ACCESS_KEY_ID="$ACCESS_KEY_ID" \
+SECRET_ACCESS_KEY="$SECRET_ACCESS_KEY" \
+UPMON_PING_URL="$UPMON_PING_URL" \
+python3 - "$TMP_FILE" <<'PY'
+import json, os, sys, yaml
 
-ansible-vault encrypt "$TMP_FILE" --output "$VAULT_FILE"
+with open(os.environ["KEY_FILE"]) as handle:
+    service_account_key = json.dumps(json.load(handle))
+
+secrets = {
+    "yc_service_account_key": service_account_key,
+    "yc_cloud_id": os.environ["CLOUD_ID"],
+    "yc_folder_id": os.environ["FOLDER_ID"],
+    "pg_password": os.environ["PG_PASSWORD"],
+    "datadog_api_key": os.environ["DATADOG_API_KEY"],
+    "datadog_app_key": os.environ["DATADOG_APP_KEY"],
+    "aws_access_key_id": os.environ["ACCESS_KEY_ID"],
+    "aws_secret_access_key": os.environ["SECRET_ACCESS_KEY"],
+    "upmon_ping_url": os.environ["UPMON_PING_URL"],
+}
+
+with open(sys.argv[1], "w") as handle:
+    yaml.safe_dump(
+        secrets,
+        handle,
+        default_flow_style=False,
+        default_style='"',
+        sort_keys=False,
+        allow_unicode=True,
+    )
+PY
+
+ansible-vault encrypt "$TMP_FILE" --output "$VAULT_FILE" --vault-password-file "$VAULT_PASS_FILE"
 echo "Created $VAULT_FILE"

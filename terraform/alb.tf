@@ -25,7 +25,7 @@ resource "yandex_alb_backend_group" "web" {
   http_backend {
     name             = "web"
     weight           = 1
-    port             = 80
+    port             = local.app_port
     target_group_ids = [yandex_alb_target_group.web.id]
 
     healthcheck {

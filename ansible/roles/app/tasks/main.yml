@@ -1,13 +1,30 @@
 ---
-- name: Ensure the database connection details are known
+- name: Ensure the deployment settings are known
   ansible.builtin.assert:
     that:
-      - db_host | length > 0
+      - app_port is defined
+      - db_host is defined and db_host | length > 0
+      - db_name is defined and db_name | length > 0
+      - db_user is defined and db_user | length > 0
+      - db_port is defined
       - db_password | length > 0
     fail_msg: >-
-      Database host or password is empty. Both come from the environment, so
-      run "eval \"$(./scripts/secrets.sh)\"" and "make apply" first.
+      The deployment settings are incomplete. Everything but the password is
+      generated into group_vars/all/terraform.yml by "make apply", and the
+      password comes from the vault key pg_password — check it with
+      "make vault-view".
     quiet: true
+
+- name: Ensure no database setting spans several lines
+  ansible.builtin.assert:
+    that:
+      - "[db_host, db_name, db_user, db_password] | join('') is not search('\n')"
+    fail_msg: >-
+      One of the database settings contains a line break, which would add a
+      stray line to the environment file and silently change what the
+      container reads. Check the vault key pg_password with "make vault-edit".
+    quiet: true
+  no_log: true
 
 - name: Ensure the application directory exists
   ansible.builtin.file:
@@ -25,6 +42,7 @@
     group: root
     mode: "0600"
   register: app_env
+  no_log: true
 
 - name: Pull the application image
   community.docker.docker_image:

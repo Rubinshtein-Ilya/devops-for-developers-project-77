@@ -1,5 +1,5 @@
 resource "datadog_monitor" "app_http" {
-  count = var.datadog_app_key == "" ? 0 : 1
+  count = local.datadog_enabled ? 1 : 0
 
   name = "[${var.project_name}] application does not answer over HTTP"
   type = "service check"

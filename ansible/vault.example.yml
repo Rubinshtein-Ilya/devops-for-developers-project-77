@@ -1,9 +1,18 @@
-TF_VAR_yc_service_account_key: '{"id":"aje...","service_account_id":"aje...","created_at":"2026-01-01T00:00:00Z","key_algorithm":"RSA_2048","public_key":"...","private_key":"..."}'
-TF_VAR_yc_cloud_id: "ao7...replace-me"
-TF_VAR_yc_folder_id: "ao7...replace-me"
-TF_VAR_pg_password: "replace-me"
-TF_VAR_datadog_api_key: "32-hex-characters"
-TF_VAR_datadog_app_key: "ddapp_...replace-me"
-AWS_ACCESS_KEY_ID: "YC...replace-me"
-AWS_SECRET_ACCESS_KEY: "YC...replace-me"
-UPMON_PING_URL: "https://upmon.net/00000000-0000-0000-0000-000000000000"
+# Состав ansible/vault.yml. Файл создаётся командой `make vault-init`,
+# правится через `make vault-edit` и хранится зашифрованным.
+#
+# Ключи должны присутствовать все девять: Terraform читает их через провайдер
+# ansiblevault, и отсутствующий ключ роняет `terraform plan`. Необязательные
+# значения оставляйте пустой строкой, а не удаляйте.
+#
+# Значения всегда в кавычках. Без них YAML прочитает `123456` как число, а
+# `yes` — как булево, и пароль в базе разойдётся с тем, что вы задумали.
+yc_service_account_key: '{"id":"aje...","service_account_id":"aje...","created_at":"2026-01-01T00:00:00Z","key_algorithm":"RSA_2048","public_key":"...","private_key":"..."}'
+yc_cloud_id: "ao7...replace-me"
+yc_folder_id: "ao7...replace-me"
+pg_password: "replace-me"
+datadog_api_key: "32-hex-characters"
+datadog_app_key: "ddapp_...replace-me"
+aws_access_key_id: "YC...replace-me"
+aws_secret_access_key: "YC...replace-me"
+upmon_ping_url: "https://upmon.net/00000000-0000-0000-0000-000000000000"
