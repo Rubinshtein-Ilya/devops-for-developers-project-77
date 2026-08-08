@@ -15,6 +15,17 @@
       "make vault-view".
     quiet: true
 
+- name: Ensure no database setting spans several lines
+  ansible.builtin.assert:
+    that:
+      - "[db_host, db_name, db_user, db_password] | join('') is not search('\n')"
+    fail_msg: >-
+      One of the database settings contains a line break, which would add a
+      stray line to the environment file and silently change what the
+      container reads. Check the vault key pg_password with "make vault-edit".
+    quiet: true
+  no_log: true
+
 - name: Ensure the application directory exists
   ansible.builtin.file:
     path: "{{ app_dir }}"
