@@ -38,5 +38,8 @@ locals {
   datadog_api_key        = sensitive(data.ansiblevault_path.datadog_api_key.value)
   datadog_app_key        = sensitive(data.ansiblevault_path.datadog_app_key.value)
 
-  datadog_enabled = data.ansiblevault_path.datadog_app_key.value != ""
+  datadog_enabled = alltrue([
+    data.ansiblevault_path.datadog_api_key.value != "",
+    data.ansiblevault_path.datadog_app_key.value != "",
+  ])
 }

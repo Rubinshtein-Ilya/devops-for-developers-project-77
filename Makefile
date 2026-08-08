@@ -4,7 +4,7 @@ VAULT_ARGS := --vault-password-file $(ANSIBLE_DIR)/.vault_pass
 
 BACKEND_CREDS = s=$$(./scripts/secrets.sh) && eval "$$s"
 
-.PHONY: help setup vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
+.PHONY: help setup vault-init vault-edit vault-view init fmt fmt-check validate lint plan apply destroy output ssh \
         galaxy inventory ping syntax provision deploy monitoring release
 
 help:
@@ -31,10 +31,13 @@ init: ## Initialize Terraform and connect the remote backend
 fmt: ## Format Terraform files
 	$(TF) fmt -recursive
 
+fmt-check: ## Report badly formatted Terraform files without touching them
+	$(TF) fmt -check -recursive -diff
+
 validate: ## Validate the Terraform configuration
 	$(TF) validate
 
-lint: fmt validate syntax ## Check both Terraform and Ansible
+lint: fmt-check validate syntax ## Check both Terraform and Ansible, changing nothing
 
 plan: ## Show what would change
 	@$(BACKEND_CREDS) && $(TF) plan
@@ -49,7 +52,14 @@ output: ## Show the addresses of created resources
 	@$(BACKEND_CREDS) && $(TF) output
 
 ssh: ## Connect to the first web server
-	@$(BACKEND_CREDS) && ssh ubuntu@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
+	@$(BACKEND_CREDS) && \
+	user=$$($(TF) output -raw ssh_user 2>/dev/null || true) && \
+	host=$$($(TF) output -json web_public_ips 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])' 2>/dev/null || true) && \
+	if [ -z "$$user" ] || [ -z "$$host" ]; then \
+		echo "No servers to connect to. Run 'make apply' first." >&2; \
+		exit 1; \
+	fi && \
+	ssh "$$user@$$host"
 
 # --- Деплой ---
 
@@ -74,4 +84,4 @@ deploy: ## Deploy the application containers
 monitoring: ## Install the Datadog agent and the uptime reporting
 	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
 
-release: apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring
+release: galaxy apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring

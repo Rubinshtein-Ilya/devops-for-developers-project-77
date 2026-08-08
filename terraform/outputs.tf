@@ -13,6 +13,11 @@ output "dns_name_servers" {
   value       = ["ns1.yandexcloud.kz", "ns2.yandexcloud.kz"]
 }
 
+output "ssh_user" {
+  description = "Login to use when connecting to the web servers."
+  value       = var.ssh_user
+}
+
 output "web_public_ips" {
   description = "Public addresses of the web servers, for SSH and Ansible."
   value       = [for vm in yandex_compute_instance.web : vm.network_interface.0.nat_ip_address]

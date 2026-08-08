@@ -62,7 +62,7 @@ resource "yandex_vpc_security_group" "web" {
   ingress {
     protocol       = "TCP"
     description    = "SSH for provisioning"
-    v4_cidr_blocks = ["0.0.0.0/0"]
+    v4_cidr_blocks = var.ssh_allowed_cidrs
     port           = 22
   }
 
