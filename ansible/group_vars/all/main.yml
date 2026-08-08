@@ -8,12 +8,11 @@ db_password: "{{ pg_password | default('') }}"
 uptime_ping_url: "{{ upmon_ping_url | default('') }}"
 uptime_interval_minutes: 5
 
-datadog_site: datadoghq.com
 datadog_agent_major_version: 7
 
 datadog_config:
   tags:
-    - "project:project-77"
+    - "project:{{ project_name }}"
     - "service:{{ app_service_tag }}"
     - "env:production"
 
@@ -27,4 +26,4 @@ datadog_checks:
         collect_response_time: true
         tags:
           - "service:{{ app_service_tag }}"
-          - "project:project-77"
+          - "project:{{ project_name }}"

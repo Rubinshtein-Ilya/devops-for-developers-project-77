@@ -18,10 +18,12 @@ locals {
       app_url         = local.app_url
       app_port        = local.app_port
       app_service_tag = var.app_service_tag
+      datadog_site    = var.datadog_site
       db_host         = yandex_mdb_postgresql_cluster.this.host[0].fqdn
       db_port         = local.db_port
       db_name         = yandex_mdb_postgresql_database.app.name
       db_user         = yandex_mdb_postgresql_user.app.name
+      project_name    = var.project_name
     }),
   ])
 }
