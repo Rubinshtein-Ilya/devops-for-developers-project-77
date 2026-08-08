@@ -7,7 +7,7 @@ locals {
       for index, vm in yandex_compute_instance.web :
       "web${index + 1} ansible_host=${vm.network_interface.0.nat_ip_address}"
     ],
-    ["", "[webservers:vars]", "ansible_user=ubuntu", ""],
+    ["", "[webservers:vars]", "ansible_user=${var.ssh_user}", ""],
   ))
 
   terraform_vars = join("\n", [

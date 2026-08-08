@@ -70,6 +70,12 @@ variable "web_preemptible" {
   default     = false
 }
 
+variable "ssh_user" {
+  description = "Login created on the web servers by cloud-init. Reaches Ansible through the generated inventory and \"make ssh\" through an output, so the three of them cannot drift apart."
+  type        = string
+  default     = "ubuntu"
+}
+
 variable "ssh_public_key_path" {
   description = "Path to the SSH public key placed on web servers."
   type        = string
