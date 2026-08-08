@@ -86,6 +86,16 @@ variable "ssh_allowed_cidrs" {
   description = "Address ranges allowed to reach SSH on the web servers. The default keeps port 22 open to the internet, which key-only authentication makes survivable but not private."
   type        = list(string)
   default     = ["0.0.0.0/0"]
+
+  validation {
+    condition     = length(var.ssh_allowed_cidrs) > 0
+    error_message = "At least one range is required — an empty list would lock everyone out of the servers, Ansible included."
+  }
+
+  validation {
+    condition     = alltrue([for cidr in var.ssh_allowed_cidrs : can(cidrhost(cidr, 0))])
+    error_message = "Every entry must be a CIDR block, for example 203.0.113.10/32."
+  }
 }
 
 variable "pg_version" {
