@@ -43,6 +43,7 @@ jobs:
 
       - name: Parse every YAML file that is not encrypted
         run: |
+          pip install --quiet pyyaml
           python3 - <<'PY'
           import pathlib
           import sys
