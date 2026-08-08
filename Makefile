@@ -2,7 +2,7 @@ TF := terraform -chdir=terraform
 ANSIBLE_DIR := ansible
 VAULT_ARGS := --vault-password-file $(ANSIBLE_DIR)/.vault_pass
 
-SECRETS = s=$$(./scripts/secrets.sh) && eval "$$s"
+BACKEND_CREDS = s=$$(./scripts/secrets.sh) && eval "$$s"
 
 .PHONY: help setup vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
         galaxy inventory ping syntax provision deploy monitoring release
@@ -26,7 +26,7 @@ vault-view: ## Show the decrypted vault contents
 # --- Инфраструктура ---
 
 init: ## Initialize Terraform and connect the remote backend
-	@$(SECRETS) && $(TF) init
+	@$(BACKEND_CREDS) && $(TF) init
 
 fmt: ## Format Terraform files
 	$(TF) fmt -recursive
@@ -37,19 +37,19 @@ validate: ## Validate the Terraform configuration
 lint: fmt validate syntax ## Check both Terraform and Ansible
 
 plan: ## Show what would change
-	@$(SECRETS) && $(TF) plan
+	@$(BACKEND_CREDS) && $(TF) plan
 
 apply: ## Create or update the infrastructure
-	@$(SECRETS) && $(TF) apply
+	@$(BACKEND_CREDS) && $(TF) apply
 
 destroy: ## Delete the infrastructure
-	@$(SECRETS) && $(TF) destroy
+	@$(BACKEND_CREDS) && $(TF) destroy
 
 output: ## Show the addresses of created resources
-	@$(SECRETS) && $(TF) output
+	@$(BACKEND_CREDS) && $(TF) output
 
 ssh: ## Connect to the first web server
-	@$(SECRETS) && ssh ubuntu@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
+	@$(BACKEND_CREDS) && ssh ubuntu@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
 
 # --- Деплой ---
 
@@ -69,9 +69,9 @@ provision: ## Install Docker on the web servers
 	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags setup
 
 deploy: ## Deploy the application containers
-	@$(SECRETS) && cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags deploy
+	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags deploy
 
 monitoring: ## Install the Datadog agent and the uptime reporting
-	@$(SECRETS) && cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
+	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
 
 release: apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring

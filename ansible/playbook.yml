@@ -41,6 +41,9 @@
   serial: 1
   tags: deploy
 
+  vars_files:
+    - vault.yml
+
   roles:
     - app
 
@@ -48,6 +51,9 @@
   hosts: webservers
   become: true
   tags: monitoring
+
+  vars_files:
+    - vault.yml
 
   pre_tasks:
     - name: Ensure the Datadog API key is set

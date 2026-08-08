@@ -36,12 +36,9 @@ VAULT_KEYS = (
 ENV_NAMES = {
     "aws_access_key_id": "AWS_ACCESS_KEY_ID",
     "aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
-    "pg_password": "TF_VAR_pg_password",
-    "datadog_api_key": "TF_VAR_datadog_api_key",
-    "upmon_ping_url": "UPMON_PING_URL",
 }
 
-REQUIRED = ("aws_access_key_id", "aws_secret_access_key")
+REQUIRED = tuple(ENV_NAMES)
 
 data = yaml.safe_load(sys.stdin) or {}
 

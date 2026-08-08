@@ -2,15 +2,12 @@
 ansible_ssh_private_key_file: "~/.ssh/id_ed25519"
 
 app_name: blog
-app_port: 80
-app_service_tag: "{{ app_name }}"
 
-db_password: "{{ lookup('env', 'TF_VAR_pg_password') }}"
+db_password: "{{ pg_password | default('') }}"
 
-uptime_ping_url: "{{ lookup('env', 'UPMON_PING_URL') }}"
+uptime_ping_url: "{{ upmon_ping_url | default('') }}"
 uptime_interval_minutes: 5
 
-datadog_api_key: "{{ lookup('env', 'TF_VAR_datadog_api_key') }}"
 datadog_site: datadoghq.com
 datadog_agent_major_version: 7
 
