@@ -16,7 +16,17 @@ terraform {
       source  = "hashicorp/local"
       version = "~> 2.5"
     }
+
+    ansiblevault = {
+      source  = "MeilleursAgents/ansiblevault"
+      version = "~> 3.0"
+    }
   }
+}
+
+provider "ansiblevault" {
+  root_folder = abspath(local.ansible_dir)
+  vault_path  = abspath("${local.ansible_dir}/.vault_pass")
 }
 
 provider "datadog" {
