@@ -21,23 +21,52 @@ fi
 ansible-vault view "$VAULT_FILE" --vault-password-file "$VAULT_PASS_FILE" | python3 -c '
 import sys, yaml, shlex
 
-EXPORTED = (
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "TF_VAR_pg_password",
-    "TF_VAR_datadog_api_key",
-    "UPMON_PING_URL",
+VAULT_KEYS = (
+    "yc_service_account_key",
+    "yc_cloud_id",
+    "yc_folder_id",
+    "pg_password",
+    "datadog_api_key",
+    "datadog_app_key",
+    "aws_access_key_id",
+    "aws_secret_access_key",
+    "upmon_ping_url",
 )
 
-REQUIRED = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
+ENV_NAMES = {
+    "aws_access_key_id": "AWS_ACCESS_KEY_ID",
+    "aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
+    "pg_password": "TF_VAR_pg_password",
+    "datadog_api_key": "TF_VAR_datadog_api_key",
+    "upmon_ping_url": "UPMON_PING_URL",
+}
+
+REQUIRED = ("aws_access_key_id", "aws_secret_access_key")
 
 data = yaml.safe_load(sys.stdin) or {}
 
-missing = [key for key in REQUIRED if not data.get(key)]
-if missing:
-    sys.exit("Vault is missing the S3 backend credentials: " + ", ".join(missing))
+problems = []
+for key in data:
+    if key not in VAULT_KEYS:
+        problems.append(f"{key}: unknown key, add it to VAULT_KEYS in scripts/secrets.sh")
+for key in VAULT_KEYS:
+    if key not in data:
+        problems.append(f"{key}: missing from the vault")
+for key in REQUIRED:
+    if not data.get(key):
+        problems.append(f"{key}: empty, the S3 backend cannot authenticate without it")
 
-for key in EXPORTED:
-    if key in data:
-        print(f"export {key}={shlex.quote(str(data[key]))}")
+if problems:
+    print("Vault keys do not match scripts/secrets.sh, nothing exported:", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    sys.exit(1)
+
+exports = []
+for key, env_name in ENV_NAMES.items():
+    value = data[key]
+    value = "" if value is None else str(value)
+    exports.append(f"export {env_name}={shlex.quote(value)}")
+
+print("\n".join(exports))
 '

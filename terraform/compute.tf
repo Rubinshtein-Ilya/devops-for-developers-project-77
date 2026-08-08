@@ -41,4 +41,10 @@ resource "yandex_compute_instance" "web" {
       ssh_public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
     })
   }
+
+  lifecycle {
+    ignore_changes = [
+      boot_disk[0].initialize_params[0].image_id,
+    ]
+  }
 }

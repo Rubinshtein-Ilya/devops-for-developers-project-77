@@ -5,8 +5,9 @@
       - uptime_ping_url | length > 0
       - app_url | length > 0
     fail_msg: >-
-      UPMON_PING_URL is missing from the vault (add it with "make vault-edit"),
-      or the infrastructure has not been created yet (run "make apply").
+      The ping URL is missing — set the vault key upmon_ping_url with
+      "make vault-edit" — or the infrastructure has not been created yet
+      (run "make apply").
     quiet: true
 
 - name: Install the uptime ping script

@@ -1,31 +1,31 @@
 data "ansiblevault_path" "yc_service_account_key" {
   path = local.vault_file
-  key  = "TF_VAR_yc_service_account_key"
+  key  = "yc_service_account_key"
 }
 
 data "ansiblevault_path" "yc_cloud_id" {
   path = local.vault_file
-  key  = "TF_VAR_yc_cloud_id"
+  key  = "yc_cloud_id"
 }
 
 data "ansiblevault_path" "yc_folder_id" {
   path = local.vault_file
-  key  = "TF_VAR_yc_folder_id"
+  key  = "yc_folder_id"
 }
 
 data "ansiblevault_path" "pg_password" {
   path = local.vault_file
-  key  = "TF_VAR_pg_password"
+  key  = "pg_password"
 }
 
 data "ansiblevault_path" "datadog_api_key" {
   path = local.vault_file
-  key  = "TF_VAR_datadog_api_key"
+  key  = "datadog_api_key"
 }
 
 data "ansiblevault_path" "datadog_app_key" {
   path = local.vault_file
-  key  = "TF_VAR_datadog_app_key"
+  key  = "datadog_app_key"
 }
 
 locals {

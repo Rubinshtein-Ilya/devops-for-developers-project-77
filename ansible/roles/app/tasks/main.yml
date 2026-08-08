@@ -2,12 +2,16 @@
 - name: Ensure the database connection details are known
   ansible.builtin.assert:
     that:
-      - db_host | length > 0
+      - db_host is defined and db_host | length > 0
+      - db_name is defined and db_name | length > 0
+      - db_user is defined and db_user | length > 0
+      - db_port is defined
       - db_password | length > 0
     fail_msg: >-
-      Database host or password is empty. The host comes from Terraform, so run
-      "make apply" first; the password comes from the vault, so check that
-      TF_VAR_pg_password is there (make vault-view).
+      The database settings are incomplete. Everything but the password is
+      generated into group_vars/all/terraform.yml by "make apply", and the
+      password comes from the vault key pg_password — check it with
+      "make vault-view".
     quiet: true
 
 - name: Ensure the application directory exists

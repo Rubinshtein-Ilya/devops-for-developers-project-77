@@ -68,15 +68,15 @@ with open(os.environ["KEY_FILE"]) as handle:
     service_account_key = json.dumps(json.load(handle))
 
 secrets = {
-    "TF_VAR_yc_service_account_key": service_account_key,
-    "TF_VAR_yc_cloud_id": os.environ["CLOUD_ID"],
-    "TF_VAR_yc_folder_id": os.environ["FOLDER_ID"],
-    "TF_VAR_pg_password": os.environ["PG_PASSWORD"],
-    "TF_VAR_datadog_api_key": os.environ["DATADOG_API_KEY"],
-    "TF_VAR_datadog_app_key": os.environ["DATADOG_APP_KEY"],
-    "AWS_ACCESS_KEY_ID": os.environ["ACCESS_KEY_ID"],
-    "AWS_SECRET_ACCESS_KEY": os.environ["SECRET_ACCESS_KEY"],
-    "UPMON_PING_URL": os.environ["UPMON_PING_URL"],
+    "yc_service_account_key": service_account_key,
+    "yc_cloud_id": os.environ["CLOUD_ID"],
+    "yc_folder_id": os.environ["FOLDER_ID"],
+    "pg_password": os.environ["PG_PASSWORD"],
+    "datadog_api_key": os.environ["DATADOG_API_KEY"],
+    "datadog_app_key": os.environ["DATADOG_APP_KEY"],
+    "aws_access_key_id": os.environ["ACCESS_KEY_ID"],
+    "aws_secret_access_key": os.environ["SECRET_ACCESS_KEY"],
+    "upmon_ping_url": os.environ["UPMON_PING_URL"],
 }
 
 with open(sys.argv[1], "w") as handle:

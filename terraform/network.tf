@@ -81,7 +81,7 @@ resource "yandex_vpc_security_group" "postgresql" {
     protocol          = "TCP"
     description       = "PostgreSQL from web servers"
     security_group_id = yandex_vpc_security_group.web.id
-    port              = 6432
+    port              = local.db_port
   }
 
   egress {

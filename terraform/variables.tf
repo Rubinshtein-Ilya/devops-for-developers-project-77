@@ -95,19 +95,19 @@ variable "pg_disk_size" {
 }
 
 variable "pg_database" {
-  description = "Application database name."
+  description = "Application database name. Reaches Ansible through group_vars/all/terraform.yml. Changing it on a live installation recreates the database."
   type        = string
   default     = "app"
 }
 
 variable "pg_user" {
-  description = "Application database user."
+  description = "Application database user. Reaches Ansible through group_vars/all/terraform.yml. Changing it on a live installation recreates the user."
   type        = string
   default     = "app"
 }
 
 variable "app_service_tag" {
-  description = "Value of the service tag the Datadog agent reports with. Must match ansible/group_vars/all.yml."
+  description = "Value of the service tag the Datadog agent reports with. Must match ansible/group_vars/all/main.yml."
   type        = string
   default     = "blog"
 }

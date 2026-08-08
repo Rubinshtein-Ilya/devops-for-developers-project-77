@@ -5,9 +5,6 @@ app_name: blog
 app_port: 80
 app_service_tag: "{{ app_name }}"
 
-db_port: 6432
-db_name: app
-db_user: app
 db_password: "{{ lookup('env', 'TF_VAR_pg_password') }}"
 
 uptime_ping_url: "{{ lookup('env', 'UPMON_PING_URL') }}"
