@@ -30,16 +30,16 @@ provider "ansiblevault" {
 }
 
 provider "datadog" {
-  api_key = var.datadog_api_key
-  app_key = var.datadog_app_key
+  api_key = local.datadog_api_key
+  app_key = local.datadog_app_key
   api_url = "https://api.${var.datadog_site}/"
 }
 
 provider "yandex" {
-  service_account_key_file = var.yc_service_account_key
+  service_account_key_file = local.yc_service_account_key
 
-  cloud_id         = var.yc_cloud_id
-  folder_id        = var.yc_folder_id
+  cloud_id         = local.yc_cloud_id
+  folder_id        = local.yc_folder_id
   zone             = var.yc_zone
   endpoint         = "api.yandexcloud.kz:443"
   storage_endpoint = "https://storage.yandexcloud.kz"

@@ -1,21 +1,3 @@
-variable "yc_service_account_key" {
-  description = "Contents of a service account authorized key in JSON format. Passed via TF_VAR_yc_service_account_key."
-  type        = string
-  sensitive   = true
-}
-
-variable "yc_cloud_id" {
-  description = "Yandex Cloud identifier. Passed via TF_VAR_yc_cloud_id."
-  type        = string
-  sensitive   = true
-}
-
-variable "yc_folder_id" {
-  description = "Yandex Cloud folder identifier. Passed via TF_VAR_yc_folder_id."
-  type        = string
-  sensitive   = true
-}
-
 variable "yc_zone" {
   description = "Default availability zone. Kazakhstan installation provides kz1-a only."
   type        = string
@@ -130,28 +112,8 @@ variable "app_service_tag" {
   default     = "blog"
 }
 
-variable "datadog_api_key" {
-  description = "Datadog API key. Passed via TF_VAR_datadog_api_key."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "datadog_app_key" {
-  description = "Datadog application key. Passed via TF_VAR_datadog_app_key."
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
 variable "datadog_site" {
   description = "Datadog site the account belongs to."
   type        = string
   default     = "datadoghq.com"
-}
-
-variable "pg_password" {
-  description = "Application database password. Passed via TF_VAR_pg_password."
-  type        = string
-  sensitive   = true
 }

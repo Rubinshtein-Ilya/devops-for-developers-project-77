@@ -23,7 +23,7 @@ resource "yandex_mdb_postgresql_cluster" "this" {
 resource "yandex_mdb_postgresql_user" "app" {
   cluster_id = yandex_mdb_postgresql_cluster.this.id
   name       = var.pg_user
-  password   = var.pg_password
+  password   = local.pg_password
 }
 
 resource "yandex_mdb_postgresql_database" "app" {
