@@ -33,6 +33,11 @@ provider "datadog" {
   api_key = local.datadog_api_key
   app_key = local.datadog_app_key
   api_url = "https://api.${var.datadog_site}/"
+
+  # Terraform configures every declared provider, even when the only resource
+  # using it is switched off with count = 0. Without this an installation that
+  # skips Datadog fails the whole plan on its empty keys.
+  validate = false
 }
 
 provider "yandex" {
