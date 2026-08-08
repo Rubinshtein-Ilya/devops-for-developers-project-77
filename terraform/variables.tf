@@ -107,7 +107,7 @@ variable "pg_user" {
 }
 
 variable "app_service_tag" {
-  description = "Value of the service tag the Datadog agent reports with. Must match ansible/group_vars/all/main.yml."
+  description = "Value of the service tag the Datadog agent reports with. Reaches Ansible through group_vars/all/terraform.yml, so the monitor and the agent always tag alike."
   type        = string
   default     = "blog"
 }
