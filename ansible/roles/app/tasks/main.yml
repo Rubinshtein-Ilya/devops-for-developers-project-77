@@ -31,6 +31,7 @@
     group: root
     mode: "0600"
   register: app_env
+  no_log: true
 
 - name: Pull the application image
   community.docker.docker_image:
