@@ -35,11 +35,15 @@ TMP_FILE="$(mktemp)"
 trap 'rm -f "$TMP_FILE"' EXIT
 
 cat > "$TMP_FILE" <<EOF
-TF_VAR_yc_service_account_key: '$SA_KEY'
-TF_VAR_yc_cloud_id: "$CLOUD_ID"
-TF_VAR_yc_folder_id: "$FOLDER_ID"
-AWS_ACCESS_KEY_ID: "$ACCESS_KEY_ID"
-AWS_SECRET_ACCESS_KEY: "$SECRET_ACCESS_KEY"
+yc_service_account_key: '$SA_KEY'
+yc_cloud_id: "$CLOUD_ID"
+yc_folder_id: "$FOLDER_ID"
+aws_access_key_id: "$ACCESS_KEY_ID"
+aws_secret_access_key: "$SECRET_ACCESS_KEY"
+pg_password: ""
+datadog_api_key: ""
+datadog_app_key: ""
+upmon_ping_url: ""
 EOF
 
 ansible-vault encrypt "$TMP_FILE" --output "$VAULT_FILE"
