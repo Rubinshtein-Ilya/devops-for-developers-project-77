@@ -52,7 +52,14 @@ output: ## Show the addresses of created resources
 	@$(BACKEND_CREDS) && $(TF) output
 
 ssh: ## Connect to the first web server
-	@$(BACKEND_CREDS) && ssh $$($(TF) output -raw ssh_user)@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
+	@$(BACKEND_CREDS) && \
+	user=$$($(TF) output -raw ssh_user 2>/dev/null || true) && \
+	host=$$($(TF) output -json web_public_ips 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])' 2>/dev/null || true) && \
+	if [ -z "$$user" ] || [ -z "$$host" ]; then \
+		echo "No servers to connect to. Run 'make apply' first." >&2; \
+		exit 1; \
+	fi && \
+	ssh "$$user@$$host"
 
 # --- Деплой ---
 
