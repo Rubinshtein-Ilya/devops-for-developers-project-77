@@ -1,6 +1,6 @@
 output "app_url" {
   description = "Public address of the application."
-  value       = "https://${var.domain_name}"
+  value       = local.app_url
 }
 
 output "load_balancer_ip" {
@@ -30,5 +30,5 @@ output "postgresql_host" {
 
 output "postgresql_connection" {
   description = "Connection string template for the application database."
-  value       = "postgresql://${var.pg_user}@${yandex_mdb_postgresql_cluster.this.host[0].fqdn}:6432/${var.pg_database}"
+  value       = "postgresql://${yandex_mdb_postgresql_user.app.name}@${yandex_mdb_postgresql_cluster.this.host[0].fqdn}:${local.db_port}/${yandex_mdb_postgresql_database.app.name}"
 }
