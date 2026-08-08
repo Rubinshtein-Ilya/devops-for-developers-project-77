@@ -7,44 +7,54 @@ VAULT_PASS_FILE="${VAULT_PASS_FILE:-$ROOT/ansible/.vault_pass}"
 
 if [ ! -f "$VAULT_FILE" ]; then
   echo "Vault file not found: $VAULT_FILE" >&2
+  echo "Create it with 'make vault-init'." >&2
   exit 1
 fi
 
-if [ -f "$VAULT_PASS_FILE" ]; then
-  set -- --vault-password-file "$VAULT_PASS_FILE"
-else
-  set --
+if [ ! -f "$VAULT_PASS_FILE" ]; then
+  echo "Vault password file not found: $VAULT_PASS_FILE" >&2
+  echo "Write the vault password into it — Terraform reads the vault through a" >&2
+  echo "provider, which has no way to ask for the password interactively." >&2
+  exit 1
 fi
 
-ansible-vault view "$VAULT_FILE" "$@" | python3 -c '
+ansible-vault view "$VAULT_FILE" --vault-password-file "$VAULT_PASS_FILE" | python3 -c '
 import sys, yaml, shlex
 
+VAULT_KEYS = (
+    "yc_service_account_key",
+    "yc_cloud_id",
+    "yc_folder_id",
+    "pg_password",
+    "datadog_api_key",
+    "datadog_app_key",
+    "aws_access_key_id",
+    "aws_secret_access_key",
+    "upmon_ping_url",
+)
+
 ENV_NAMES = {
-    "yc_service_account_key": "TF_VAR_yc_service_account_key",
-    "yc_cloud_id": "TF_VAR_yc_cloud_id",
-    "yc_folder_id": "TF_VAR_yc_folder_id",
-    "pg_password": "TF_VAR_pg_password",
-    "datadog_api_key": "TF_VAR_datadog_api_key",
-    "datadog_app_key": "TF_VAR_datadog_app_key",
     "aws_access_key_id": "AWS_ACCESS_KEY_ID",
     "aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
+    "pg_password": "TF_VAR_pg_password",
+    "datadog_api_key": "TF_VAR_datadog_api_key",
     "upmon_ping_url": "UPMON_PING_URL",
 }
-LEGACY_NAMES = {env_name: key for key, env_name in ENV_NAMES.items()}
+
+REQUIRED = ("aws_access_key_id", "aws_secret_access_key")
 
 data = yaml.safe_load(sys.stdin) or {}
 
 problems = []
 for key in data:
-    if key in ENV_NAMES:
-        continue
-    if key in LEGACY_NAMES:
-        problems.append(f"{key}: old name, rename it to {LEGACY_NAMES[key]}")
-    else:
-        problems.append(f"{key}: unknown key, add it to ENV_NAMES in scripts/secrets.sh")
-for key in ENV_NAMES:
+    if key not in VAULT_KEYS:
+        problems.append(f"{key}: unknown key, add it to VAULT_KEYS in scripts/secrets.sh")
+for key in VAULT_KEYS:
     if key not in data:
         problems.append(f"{key}: missing from the vault")
+for key in REQUIRED:
+    if not data.get(key):
+        problems.append(f"{key}: empty, the S3 backend cannot authenticate without it")
 
 if problems:
     print("Vault keys do not match scripts/secrets.sh, nothing exported:", file=sys.stderr)
@@ -56,9 +66,6 @@ exports = []
 for key, env_name in ENV_NAMES.items():
     value = data[key]
     value = "" if value is None else str(value)
-    if not value:
-        print(f"{key} is empty, {env_name} not exported", file=sys.stderr)
-        continue
     exports.append(f"export {env_name}={shlex.quote(value)}")
 
 print("\n".join(exports))

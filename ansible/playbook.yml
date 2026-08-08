@@ -55,9 +55,9 @@
         that:
           - datadog_api_key | length == 32
         fail_msg: >-
-          TF_VAR_datadog_api_key is missing or malformed. Set the vault key
-          datadog_api_key (make vault-edit) and reload with ./scripts/secrets.sh
-          — a Datadog API key is 32 characters long.
+          The Datadog API key is missing or malformed. Set the vault key
+          datadog_api_key with "make vault-edit" — a Datadog API key is 32
+          characters long.
         quiet: true
 
   roles:

@@ -10,8 +10,8 @@
     fail_msg: >-
       The database settings are incomplete. Everything but the password is
       generated into group_vars/all/terraform.yml by "make apply", and the
-      password comes from the environment, so run
-      "eval \"$(./scripts/secrets.sh)\"" and "make apply" first.
+      password comes from the vault key pg_password — check it with
+      "make vault-view".
     quiet: true
 
 - name: Ensure the application directory exists

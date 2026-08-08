@@ -1,8 +1,10 @@
 TF := terraform -chdir=terraform
 ANSIBLE_DIR := ansible
-VAULT_ARGS := $(shell test -f ansible/.vault_pass && echo --vault-password-file ansible/.vault_pass)
+VAULT_ARGS := --vault-password-file $(ANSIBLE_DIR)/.vault_pass
 
-.PHONY: help setup secrets vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
+SECRETS = s=$$(./scripts/secrets.sh) && eval "$$s"
+
+.PHONY: help setup vault-init vault-edit vault-view init fmt validate lint plan apply destroy output ssh \
         galaxy inventory ping syntax provision deploy monitoring release
 
 help:
@@ -11,9 +13,6 @@ help:
 # --- Подготовка проекта ---
 
 setup: vault-init init galaxy ## Create the encrypted vault, initialize Terraform, install Ansible roles
-
-secrets: ## Print the command that loads secrets into the current shell
-	@echo 'eval "$$(./scripts/secrets.sh)"'
 
 vault-init: ## Build ansible/vault.yml from a service account key
 	./scripts/make-vault.sh
@@ -27,7 +26,7 @@ vault-view: ## Show the decrypted vault contents
 # --- Инфраструктура ---
 
 init: ## Initialize Terraform and connect the remote backend
-	$(TF) init
+	@$(SECRETS) && $(TF) init
 
 fmt: ## Format Terraform files
 	$(TF) fmt -recursive
@@ -38,19 +37,19 @@ validate: ## Validate the Terraform configuration
 lint: fmt validate syntax ## Check both Terraform and Ansible
 
 plan: ## Show what would change
-	$(TF) plan
+	@$(SECRETS) && $(TF) plan
 
 apply: ## Create or update the infrastructure
-	$(TF) apply
+	@$(SECRETS) && $(TF) apply
 
 destroy: ## Delete the infrastructure
-	$(TF) destroy
+	@$(SECRETS) && $(TF) destroy
 
 output: ## Show the addresses of created resources
-	$(TF) output
+	@$(SECRETS) && $(TF) output
 
 ssh: ## Connect to the first web server
-	ssh ubuntu@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
+	@$(SECRETS) && ssh ubuntu@$$($(TF) output -json web_public_ips | python3 -c 'import json,sys; print(json.load(sys.stdin)[0])')
 
 # --- Деплой ---
 
@@ -70,9 +69,9 @@ provision: ## Install Docker on the web servers
 	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags setup
 
 deploy: ## Deploy the application containers
-	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags deploy
+	@$(SECRETS) && cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags deploy
 
 monitoring: ## Install the Datadog agent and the uptime reporting
-	cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
+	@$(SECRETS) && cd $(ANSIBLE_DIR) && ansible-playbook playbook.yml --tags monitoring
 
 release: apply provision deploy monitoring ## Create the infrastructure, deploy the application, set up monitoring
